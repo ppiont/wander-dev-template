@@ -5,6 +5,8 @@ environment: staging
 # Lower resource limits for staging
 api:
   replicaCount: 1
+  service:
+    type: LoadBalancer
   resources:
     limits:
       cpu: 250m
