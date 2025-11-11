@@ -246,15 +246,41 @@ process.on('SIGTERM', async () => {
 EOF
 
 echo ""
-echo -e "${BLUE}🐳 Creating Dockerfile...${NC}"
+echo -e "${BLUE}🐳 Creating production Dockerfile...${NC}"
 cat > Dockerfile << 'EOF'
-# API Dockerfile - Node.js + Express + TypeScript
+# Production API Dockerfile - Build and run optimized TypeScript
 
 FROM oven/bun:1-alpine
 
 WORKDIR /app
 
-# Install dependencies first (better caching)
+# Install dependencies (production only)
+COPY package.json bun.lockb* ./
+RUN bun install --production
+
+# Copy source code
+COPY . .
+
+# Build TypeScript to JavaScript
+RUN bun run build
+
+# Expose port
+EXPOSE 8080
+
+# Run built production code
+CMD ["bun", "run", "start"]
+EOF
+
+echo ""
+echo -e "${BLUE}🐳 Creating development Dockerfile...${NC}"
+cat > Dockerfile.dev << 'EOF'
+# Development API Dockerfile - Hot reload for local dev
+
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+# Install all dependencies (including dev deps)
 COPY package.json bun.lockb* ./
 RUN bun install
 
