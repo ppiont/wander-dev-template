@@ -92,7 +92,7 @@ cat > tsconfig.json << 'EOF'
 EOF
 
 echo ""
-echo -e "${BLUE}📝 Creating Express server with health endpoints...${NC}"
+echo -e "${BLUE}📝 Creating Express server with /api prefix...${NC}"
 cat > src/index.ts << 'EOF'
 import express from 'express'
 import cors from 'cors'
@@ -128,26 +128,31 @@ redis.on('error', (err) => console.error('Redis Client Error', err))
   }
 })()
 
-// Health check endpoints
-app.get('/health', async (req, res) => {
-  try {
-    // Check database
-    const dbResult = await db.query('SELECT 1')
-    const dbHealthy = dbResult.rowCount === 1
+// Health check function (shared)
+const checkHealth = async () => {
+  const dbResult = await db.query('SELECT 1')
+  const dbHealthy = dbResult.rowCount === 1
+  const redisHealthy = redis.isOpen
+  const healthy = dbHealthy && redisHealthy
 
-    // Check Redis
-    const redisHealthy = redis.isOpen
-
-    const healthy = dbHealthy && redisHealthy
-
-    res.status(healthy ? 200 : 503).json({
+  return {
+    healthy,
+    data: {
       status: healthy ? 'healthy' : 'unhealthy',
       timestamp: new Date().toISOString(),
       services: {
         database: dbHealthy ? 'healthy' : 'unhealthy',
         redis: redisHealthy ? 'healthy' : 'unhealthy',
       },
-    })
+    },
+  }
+}
+
+// Root-level health endpoint for Kubernetes probes
+app.get('/health', async (req, res) => {
+  try {
+    const { healthy, data } = await checkHealth()
+    res.status(healthy ? 200 : 503).json(data)
   } catch (error) {
     console.error('Health check failed:', error)
     res.status(503).json({
@@ -158,7 +163,25 @@ app.get('/health', async (req, res) => {
   }
 })
 
-app.get('/health/db', async (req, res) => {
+// Create API router (all business logic serves at /api)
+const apiRouter = express.Router()
+
+// API health endpoints
+apiRouter.get('/health', async (req, res) => {
+  try {
+    const { healthy, data } = await checkHealth()
+    res.status(healthy ? 200 : 503).json(data)
+  } catch (error) {
+    console.error('Health check failed:', error)
+    res.status(503).json({
+      status: 'unhealthy',
+      timestamp: new Date().toISOString(),
+      error: error instanceof Error ? error.message : 'Unknown error',
+    })
+  }
+})
+
+apiRouter.get('/health/db', async (req, res) => {
   try {
     const result = await db.query('SELECT 1')
     res.json({
@@ -174,7 +197,7 @@ app.get('/health/db', async (req, res) => {
   }
 })
 
-app.get('/health/redis', async (req, res) => {
+apiRouter.get('/health/redis', async (req, res) => {
   try {
     const isHealthy = redis.isOpen
     res.status(isHealthy ? 200 : 503).json({
@@ -190,22 +213,27 @@ app.get('/health/redis', async (req, res) => {
   }
 })
 
-// Root endpoint
-app.get('/', (req, res) => {
+// API root endpoint
+apiRouter.get('/', (req, res) => {
   res.json({
     message: 'Wander API',
     version: '1.0.0',
     endpoints: {
-      health: '/health',
-      healthDb: '/health/db',
-      healthRedis: '/health/redis',
+      health: '/api/health',
+      healthDb: '/api/health/db',
+      healthRedis: '/api/health/redis',
     },
   })
 })
 
+// Mount API router at /api
+app.use('/api', apiRouter)
+
 // Start server
 app.listen(PORT, () => {
   console.log(`🚀 API server running on http://localhost:${PORT}`)
+  console.log(`📍 API endpoints available at /api/*`)
+  console.log(`❤️  Health check available at /health (for k8s probes)`)
 })
 
 // Graceful shutdown

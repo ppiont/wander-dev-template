@@ -5,10 +5,6 @@ metadata:
   name: {{ include "wander-app.fullname" . }}
   labels:
     {{- include "wander-app.labels" . | nindent 4 }}
-  annotations:
-    nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      rewrite ^/api/(.*)$ /$1 break;
 spec:
   ingressClassName: nginx
   rules:
