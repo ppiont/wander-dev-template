@@ -9,6 +9,7 @@ repos:
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
+        exclude: \.svg$
       - id: check-yaml
         exclude: ^helm/.*\.yaml$  # Exclude Helm templates (contain Helm template syntax)
       - id: check-json
