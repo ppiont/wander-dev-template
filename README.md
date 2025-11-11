@@ -11,14 +11,15 @@ Zero-configuration development environment for full-stack applications. Get a co
 ```bash
 git clone <repo>
 cd <repo>
-make dev                     # Auto-initializes frontend/api, starts all 4 services
+make dev                     # Builds images and starts all 4 services
 ```
 
-First run automatically:
-1. 🎨 Creates React + Vite + Tailwind frontend (if missing)
-2. 🚀 Creates Express + TypeScript API (if missing)
-3. 🐳 Builds Docker images
-4. ✅ Starts all services with health checks
+This starts:
+1. 🐳 Builds Docker images (cached after first build)
+2. 🎨 React 19 + Vite 7 + Tailwind CSS v4 frontend
+3. 🚀 Express 5 + Bun API
+4. 🗄️ PostgreSQL 18 + Redis 8
+5. ✅ All services with health checks and hot reload
 
 **Access:**
 - Frontend: http://localhost:3000 (health dashboard)
@@ -28,8 +29,6 @@ First run automatically:
 
 **Stop everything:** `make down`
 
-**Subsequent runs:** Just `make dev` (skips initialization, starts services instantly)
-
 ---
 
 ## 🎯 What's Included
@@ -38,8 +37,8 @@ First run automatically:
 
 | Service | Technology | Port | Description |
 |---------|-----------|------|-------------|
-| **Frontend** | React 18 + TypeScript + Vite + Tailwind CSS | 3000 | Modern web UI with hot reload |
-| **API** | Node.js + Express + TypeScript | 8080 | REST API with health endpoints |
+| **Frontend** | React 19 + TypeScript + Vite 7 + Tailwind CSS v4 | 3000 | Modern web UI with hot reload |
+| **API** | Bun + Express 5 + TypeScript | 8080 | REST API with health endpoints |
 | **Database** | PostgreSQL 18 Alpine | 5432 | Relational database |
 | **Cache** | Redis 8 Alpine | 6379 | In-memory data store |
 
@@ -48,7 +47,7 @@ First run automatically:
 - ✅ **Hot Reload** - Instant code changes in browser and API
 - ✅ **Health Checks** - Automatic service health monitoring
 - ✅ **Pre-commit Hooks** - Auto-installed quality checks
-- ✅ **Smart Initialization** - Auto-scaffolds frontend/API on first run
+- ✅ **Complete Application** - Full-stack app checked into repo
 - ✅ **Colored Output** - Beautiful terminal feedback
 - ✅ **Error Handling** - Graceful failures with helpful messages
 
@@ -79,14 +78,12 @@ This template provides a complete developer onboarding experience:
 ### Available Commands
 
 ```bash
-# Setup (optional - 'make dev' does this automatically)
+# Setup
 make help           # Show all available commands
-make init           # Initialize both frontend + API
-make init-api       # Scaffold Express + TypeScript API only
-make init-frontend  # Scaffold React + Vite + Tailwind frontend only
+make init           # Create .env file from template
 
 # Development
-make dev            # Start all services (auto-initializes if needed)
+make dev            # Start all services with hot reload
 
 # Monitoring
 make logs           # View all service logs (follow mode)
@@ -163,22 +160,22 @@ wander-dev-template/
 ├── .env.example                  # Configuration template
 ├── .env                          # Your config (gitignored, auto-created)
 ├── src/
-│   ├── frontend/                 # React + Vite + Tailwind
-│   │   ├── Dockerfile
+│   ├── frontend/                 # React 19 + Vite 7 + Tailwind v4
+│   │   ├── Dockerfile            # Production build
+│   │   ├── Dockerfile.dev        # Development with hot reload
 │   │   ├── vite.config.ts        # Docker-optimized (host: '0.0.0.0')
 │   │   └── src/
 │   │       ├── App.tsx           # Health dashboard component
 │   │       └── index.css         # Tailwind v4 imports
-│   └── api/                      # Express + TypeScript
-│       ├── Dockerfile
+│   └── api/                      # Express 5 + Bun + TypeScript
+│       ├── Dockerfile            # Production build
+│       ├── Dockerfile.dev        # Development with hot reload
 │       └── src/
 │           └── index.ts          # Health endpoints (/health, /health/db, /health/redis)
 ├── scripts/                      # Bash-only (zero Python dependency)
 │   ├── init.sh                   # Environment initialization
 │   ├── validate.sh               # Pre-flight checks
-│   ├── health-check.sh           # Parallel health checks
-│   ├── init-frontend.sh          # Scaffold React app
-│   └── init-api.sh               # Scaffold Express API
+│   └── health-check.sh           # Parallel health checks
 ├── secrets/                      # Local secrets (gitignored)
 │   ├── .example/                 # Example secret files
 │   └── README.md
@@ -255,34 +252,31 @@ postgresql://postgres:postgres@db:5432/app_db
 
 ## 🌟 What Makes This Different
 
-### 1. Smart Initialization
+### 1. Complete Application Included
 
-**Problem:** Empty repo → where do I start?
+**Problem:** Templates are often empty shells requiring extensive setup.
 
 **Solution:**
-```bash
-make dev
-# → Detects missing source code
-# → Prompts: "Initialize API? (Y/n)"
-# → Auto-scaffolds Express + TypeScript API
-# → Prompts: "Initialize Frontend? (Y/n)"
-# → Auto-scaffolds React + Vite + Tailwind
-# → Starts all services
-```
+- Full-stack application checked into repo
+- React 19 + Vite 7 + Tailwind CSS v4 frontend with health dashboard
+- Express 5 + Bun API with PostgreSQL and Redis integration
+- Separate dev and production Docker configs
+- No scaffolding or code generation needed
 
-Manual scaffold: `make init-api`, `make init-frontend`
+Clone → `make dev` → Start coding!
 
 ### 2. Modern Stack (November 2025)
 
 | Technology | Version | Released |
 |-----------|---------|----------|
-| Node.js | 24 (LTS "Krypton") | October 2025 |
-| Bun | Latest | Faster than npm |
+| Node.js | 24 (LTS "Krypton") | October 2026 (early access) |
+| Bun | Latest | Faster than Node.js |
 | PostgreSQL | 18 Alpine | September 2025 |
 | Redis | 8 Alpine | Latest stable |
-| React | 18 | Latest stable |
+| React | 19 | Latest stable |
+| Express | 5 | Latest stable |
 | TypeScript | 5.9 | Latest stable |
-| Tailwind CSS | 4.0 | Latest (v4 syntax) |
+| Tailwind CSS | 4.0 | Latest (v4 beta) |
 | Vite | 7 | Latest |
 
 ---

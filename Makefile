@@ -1,4 +1,4 @@
-.PHONY: help init dev down logs logs-% clean init-frontend init-api services
+.PHONY: help init dev down logs logs-% clean services
 
 COMPOSE_CMD := docker compose
 ENV_FILE := .env
@@ -19,19 +19,12 @@ help: ## Show available commands
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' Makefile | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 	@echo ""
 
-init: ## Initialize frontend + API (optional - 'make dev' does this automatically)
-	@$(MAKE) init-frontend
-	@$(MAKE) init-api
-	@echo ""
-	@echo "✅ Frontend and API initialized! Run 'make dev' to start all services."
-	@echo ""
+init: ## Create .env file from template
+	@./scripts/init.sh
 
-dev: ## Start all services (auto-initializes frontend/api if missing)
+dev: ## Start all services with hot reload
 	@[ -f $(ENV_FILE) ] || { echo "Creating .env..."; ./scripts/init.sh; }
-	@[ -f src/frontend/package.json ] || { echo ""; echo "🎨 Frontend not initialized - running make init-frontend..."; echo ""; $(MAKE) init-frontend; }
-	@[ -f src/api/package.json ] || { echo ""; echo "🚀 API not initialized - running make init-api..."; echo ""; $(MAKE) init-api; }
-	@$(COMPOSE_CMD) up -d db redis
-	@$(COMPOSE_CMD) --profile app up -d api frontend
+	@$(COMPOSE_CMD) up -d --build
 	@echo ""
 	@echo "✅ All services started. Use 'make logs' to view output."
 	@echo ""
@@ -41,7 +34,7 @@ dev: ## Start all services (auto-initializes frontend/api if missing)
 	@echo ""
 
 down: ## Stop all services
-	@$(COMPOSE_CMD) --profile app down
+	@$(COMPOSE_CMD) down
 
 logs: ## Show logs (all services)
 	@$(COMPOSE_CMD) logs -f
@@ -52,24 +45,16 @@ logs-%: ## Show logs for specific service (e.g., make logs-api)
 clean: ## Remove all data (destructive!)
 	@echo "WARNING: This deletes all data!"
 	@read -p "Continue? [y/N]: " ans && [ "$$ans" = "y" ] || exit 1
-	@$(COMPOSE_CMD) --profile app down -v
+	@$(COMPOSE_CMD) down -v
 	@echo "Cleanup complete"
 
-services: ## Start only db + redis (for local dev)
+services: ## Start only db + redis (for local dev with mise)
 	@[ -f $(ENV_FILE) ] || { echo "Creating .env..."; ./scripts/init.sh; }
 	@$(COMPOSE_CMD) up -d db redis
 	@echo ""
-	@echo "Services started. To develop locally:"
+	@echo "✅ Services started (db + redis)."
+	@echo ""
+	@echo "To develop locally with mise:"
 	@echo "  cd src/frontend && bun install && bun run dev"
 	@echo "  cd src/api && bun install && bun run dev"
 	@echo ""
-
-init-frontend: ## Initialize React + Vite + Tailwind frontend
-	@[ -n "$(MISE)" ] || { echo "Installing mise..."; curl -fsSL https://mise.jdx.dev/install.sh | sh; exit 1; }
-	@mise install
-	@./scripts/init-frontend.sh
-
-init-api: ## Initialize Express + TypeScript API
-	@[ -n "$(MISE)" ] || { echo "Installing mise..."; curl -fsSL https://mise.jdx.dev/install.sh | sh; exit 1; }
-	@mise install
-	@./scripts/init-api.sh
