@@ -106,15 +106,11 @@ jobs:
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
-      - name: Install GKE auth plugin
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-
       - name: Get GKE credentials
-        run: |
-          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
-            --region=${{ env.GKE_REGION }}
+        uses: google-github-actions/get-gke-credentials@3e00d2f47c840b194fc2ccc712879146e87f98cb # v3.0.0
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_REGION }}
 
       - name: Deploy to staging with Helm
         run: |
@@ -176,15 +172,11 @@ jobs:
           workload_identity_provider: ${{ env.WORKLOAD_IDENTITY_PROVIDER }}
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
-      - name: Install GKE auth plugin
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y google-cloud-cli-gke-gcloud-auth-plugin
-
       - name: Get GKE credentials
-        run: |
-          gcloud container clusters get-credentials ${{ env.GKE_CLUSTER }} \
-            --region=${{ env.GKE_REGION }}
+        uses: google-github-actions/get-gke-credentials@3e00d2f47c840b194fc2ccc712879146e87f98cb # v3.0.0
+        with:
+          cluster_name: ${{ env.GKE_CLUSTER }}
+          location: ${{ env.GKE_REGION }}
 
       - name: Deploy to production with Helm
         run: |
