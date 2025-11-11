@@ -128,7 +128,6 @@ jobs:
             --create-namespace \
             --atomic \
             --timeout 5m \
-            --force \
             --values ./helm/wander-app/values-staging.yaml \
             --set api.image.repository=${{ env.ARTIFACT_REGISTRY }}/${{ env.REPOSITORY }}/api \
             --set api.image.tag=${{ env.IMAGE_TAG }} \
@@ -195,7 +194,6 @@ jobs:
             --create-namespace \
             --atomic \
             --timeout 5m \
-            --force \
             --values ./helm/wander-app/values-production.yaml \
             --set api.image.repository=${{ env.ARTIFACT_REGISTRY }}/${{ env.REPOSITORY }}/api \
             --set api.image.tag=${{ env.IMAGE_TAG }} \
