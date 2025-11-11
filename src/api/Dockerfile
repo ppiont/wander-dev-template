@@ -1,4 +1,4 @@
-# Production Dockerfile for API
+# Production Dockerfile
 FROM oven/bun:1-alpine
 
 WORKDIR /app
@@ -6,7 +6,7 @@ WORKDIR /app
 # Copy package files
 COPY package.json bun.lockb* ./
 
-# Install dependencies
+# Install production dependencies only
 RUN bun install --production
 
 # Copy source code

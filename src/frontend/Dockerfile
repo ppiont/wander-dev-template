@@ -1,5 +1,5 @@
-# Multi-stage Dockerfile for production deployment
-# Stage 1: Build static assets with Vite
+# Multi-stage production Dockerfile
+# Stage 1: Build static assets
 FROM oven/bun:1-alpine AS builder
 
 WORKDIR /app
@@ -24,7 +24,7 @@ FROM nginx:alpine
 # Copy built assets from builder stage
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Create nginx config that serves SPA
+# Create nginx config for SPA
 RUN cat > /etc/nginx/conf.d/default.conf << 'NGINX_EOF'
 server {
     listen 3000;
@@ -37,7 +37,7 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # Serve static assets with caching
+    # Cache static assets
     location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
         expires 1y;
         add_header Cache-Control "public, immutable";

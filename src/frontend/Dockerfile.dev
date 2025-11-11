@@ -1,0 +1,16 @@
+# Development Dockerfile with hot reload
+FROM oven/bun:1-alpine
+
+WORKDIR /app
+
+# Install dependencies
+COPY package.json bun.lockb* ./
+RUN bun install
+
+# Copy source code
+COPY . .
+
+EXPOSE 3000
+
+# Development mode with hot reload
+CMD ["bun", "run", "dev"]
