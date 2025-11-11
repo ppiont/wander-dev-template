@@ -171,6 +171,9 @@ jobs:
     name: Deploy to Production
     runs-on: ubuntu-latest
     needs: deploy-staging
+    # IMPORTANT: This job requires manual approval via GitHub Environment protection rules
+    # Configure in: Settings → Environments → production → Required reviewers
+    # Without this configuration, production will deploy automatically after staging!
     environment: production
 
     steps:
