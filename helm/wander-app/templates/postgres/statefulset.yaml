@@ -32,8 +32,6 @@ spec:
           value: {{ .Values.postgres.auth.username }}
         - name: POSTGRES_PASSWORD
           value: {{ .Values.postgres.auth.password }}
-        - name: PGDATA
-          value: /var/lib/postgresql/data/pgdata
         livenessProbe:
           exec:
             command:
@@ -58,7 +56,12 @@ spec:
           {{- toYaml .Values.postgres.resources | nindent 10 }}
         volumeMounts:
         - name: data
-          mountPath: /var/lib/postgresql/data
-      volumes:
-      - name: data
-        emptyDir: {}
+          mountPath: /var/lib/postgresql
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: {{ .Values.postgres.persistence.size }}
