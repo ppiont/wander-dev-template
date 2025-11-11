@@ -1,0 +1,83 @@
+# ============================================
+# Wander Dev Template - .gitignore
+# ============================================
+
+# Environment Configuration
+.env
+.env.local
+.env.*.local
+
+# Tool Version Managers
+.mise.lock              # mise lock file
+.tool-versions.bak      # backup files
+.rtx/                   # old rtx cache
+.config/mise/           # mise config cache
+
+# Dependencies
+node_modules/
+**/node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Build Outputs
+dist/
+build/
+**/dist/
+**/build/
+.next/
+out/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Operating System
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+*.iml
+
+# Docker
+*.env.docker
+docker-compose.override.yml
+
+# Testing
+coverage/
+.nyc_output/
+*.lcov
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.bak
+*.cache
+
+# Optional: Local overrides
+.local/
+
+# AI slop
+.claude
+.cursor
+CLAUDE.MD

@@ -1,0 +1,48 @@
+# Pre-commit Hooks Configuration
+# Install: pip install pre-commit && pre-commit install
+# Run manually: pre-commit run --all-files
+
+repos:
+  # General file checks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        exclude: ^helm/.*\.yaml$  # Exclude Helm templates (contain Helm template syntax)
+      - id: check-json
+      - id: check-added-large-files
+        args: [--maxkb=1000]
+      - id: check-merge-conflict
+      - id: detect-private-key
+
+  # TypeScript/JavaScript linting
+  - repo: local
+    hooks:
+      - id: eslint
+        name: ESLint
+        entry: bash -c 'if [ -d src/frontend ]; then cd src/frontend && bun run lint; else echo "⏭️  Skipping ESLint (frontend not initialized)"; fi'
+        language: system
+        files: \.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+  # Prevent committing .env files
+  - repo: local
+    hooks:
+      - id: no-secrets-in-env
+        name: Prevent committing .env files
+        entry: bash -c 'if git diff --cached --name-only | grep -E "^\.env$"; then echo "ERROR - Do not commit .env files"; exit 1; fi'
+        language: system
+        pass_filenames: false
+
+# Configuration for specific hooks
+exclude: |
+  (?x)^(
+      node_modules/|
+      \.vscode/|
+      \.idea/|
+      dist/|
+      build/|
+      coverage/
+  )

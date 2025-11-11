@@ -1,0 +1,124 @@
+services:
+  # ============================================
+  # CORE SERVICES (Always Running)
+  # ============================================
+
+  db:
+    image: postgres:18-alpine
+    container_name: ${PROJECT_NAME:-wander}-db
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      - POSTGRES_DB=${DB_NAME:-app_db}
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+    restart: always
+
+  redis:
+    image: redis:8-alpine
+    container_name: ${PROJECT_NAME:-wander}-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
+    networks:
+      - app-network
+    restart: always
+
+  # ============================================
+  # OPTIONAL APPLICATION SERVICES
+  # Only start if source code exists
+  # Use profiles: --profile app or --profile full
+  # ============================================
+
+  api:
+    build:
+      context: ./src/api
+      dockerfile: Dockerfile
+    profiles: [ "app", "full" ]
+    container_name: ${PROJECT_NAME:-wander}-api
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      # Configuration
+      - NODE_ENV=${NODE_ENV:-development}
+
+      # Database connection
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@db:5432/${DB_NAME:-app_db}
+      - REDIS_URL=redis://redis:6379
+      - PORT=8080
+
+      # Service configuration (passed from .env)
+      - PROJECT_NAME=${PROJECT_NAME:-wander-app}
+      - API_PORT=${API_PORT:-8080}
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=${DB_NAME:-app_db}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    volumes:
+      - ./src/api:/app
+      - /app/node_modules
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - app-network
+    restart: always
+
+  frontend:
+    build:
+      context: ./src/frontend
+      dockerfile: Dockerfile
+    profiles: [ "app", "full" ]
+    container_name: ${PROJECT_NAME:-wander}-frontend
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    environment:
+      - VITE_API_URL=http://localhost:${API_PORT:-8080}
+      - NODE_ENV=${NODE_ENV:-development}
+    volumes:
+      - ./src/frontend:/app
+      - /app/node_modules
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: always
+
+volumes:
+  postgres-data:
+    driver: local
+  redis-data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

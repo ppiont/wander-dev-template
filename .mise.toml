@@ -1,0 +1,12 @@
+# mise configuration for Wander Dev Environment
+# Automatically installs Node.js 24 LTS, Bun, and Python 3.14 when you cd into this directory
+# Install mise: https://mise.jdx.dev/getting-started.html
+
+[tools]
+node = "24"  # LTS Krypton (Oct 2025)
+bun = "latest"  # Fast all-in-one JavaScript runtime
+python = "3.14"  # Required for pre-commit hooks
+
+[env]
+# Auto-load environment variables from .env file
+_.file = '.env'
