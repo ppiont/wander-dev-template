@@ -56,8 +56,17 @@ echo ""
 echo -e "${BLUE}🎨 Adding Tailwind CSS v4...${NC}"
 bun add -D tailwindcss@next @tailwindcss/vite@next
 
+# Create Tailwind v4 config (required for beta)
+echo -e "${BLUE}⚙️  Configuring Tailwind CSS v4...${NC}"
+cat > tailwind.config.ts << 'EOF'
+import type { Config } from 'tailwindcss'
+
+export default {
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+} satisfies Config
+EOF
+
 # Update CSS with Tailwind v4 import
-echo -e "${BLUE}⚙️  Configuring Tailwind CSS...${NC}"
 cat > src/index.css << 'EOF'
 @import "tailwindcss";
 EOF
