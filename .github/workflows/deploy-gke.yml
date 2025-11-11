@@ -36,8 +36,9 @@ jobs:
           service_account: ${{ env.SERVICE_ACCOUNT }}
 
       - name: Set up gcloud CLI
-        run: |
-          gcloud config set project ${{ env.PROJECT_ID }}
+        uses: google-github-actions/setup-gcloud@5a5f7b85fca43e76e53463acaa9d408a03c98d3a # v2.1.0
+        with:
+          project_id: ${{ env.PROJECT_ID }}
 
       - name: Configure Docker for Artifact Registry
         run: |
